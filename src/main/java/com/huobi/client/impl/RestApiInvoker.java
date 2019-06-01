@@ -7,8 +7,13 @@ import com.huobi.client.impl.utils.EtfResult;
 import com.huobi.client.impl.utils.FailedAsyncResult;
 import com.huobi.client.impl.utils.JsonWrapper;
 import com.huobi.client.impl.utils.SucceededAsyncResult;
-import com.huobi.client.model.enums.EtfStatus;
+
 import java.io.IOException;
+import java.net.Proxy;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -22,7 +27,11 @@ import org.slf4j.LoggerFactory;
 abstract class RestApiInvoker {
 
   private static final Logger log = LoggerFactory.getLogger(RestApiInvoker.class);
-  private static final OkHttpClient client = new OkHttpClient();
+  private static Map<Proxy, OkHttpClient> hashMap;
+
+  static {
+    hashMap = Collections.synchronizedMap(new HashMap<>());
+  }
 
   static void checkResponse(JsonWrapper json) {
     try {
@@ -64,7 +73,7 @@ abstract class RestApiInvoker {
   static <T> T callSync(RestApiRequest<T> request) {
     try {
       String str;
-      Response response = client.newCall(request.request).execute();
+      Response response = getOrCreateClient(request.proxy).newCall(request.request).execute();
       if (response != null && response.body() != null) {
         str = response.body().string();
         response.close();
@@ -86,7 +95,7 @@ abstract class RestApiInvoker {
 
   static <T> void callASync(RestApiRequest<T> request, ResponseCallback<AsyncResult<T>> callback) {
     try {
-      Call call = client.newCall(request.request);
+      Call call = getOrCreateClient(request.proxy).newCall(request.request);
       call.enqueue(new Callback() {
         @Override
         public void onFailure(Call call, IOException e) {
@@ -140,7 +149,16 @@ abstract class RestApiInvoker {
   }
 
   static WebSocket createWebSocket(Request request, WebSocketListener listener) {
-    return client.newWebSocket(request, listener);
+    return createWebSocket(request, listener, null);
+  }
+
+  static WebSocket createWebSocket(Request request, WebSocketListener listener, Proxy proxy) {
+    return getOrCreateClient(proxy).newWebSocket(request, listener);
+  }
+
+  private static OkHttpClient getOrCreateClient(Proxy proxy) {
+    return hashMap.computeIfAbsent(proxy,
+            (k) -> new OkHttpClient.Builder().proxy(proxy).build());
   }
 }
 

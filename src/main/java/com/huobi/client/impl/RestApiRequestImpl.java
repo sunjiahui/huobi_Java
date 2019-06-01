@@ -49,6 +49,7 @@ import com.huobi.client.model.request.TransferMasterRequest;
 import com.huobi.client.model.request.TransferRequest;
 import com.huobi.client.model.request.WithdrawRequest;
 import java.math.BigDecimal;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -137,7 +138,7 @@ class RestApiRequestImpl {
   }
 
   RestApiRequest<Long> getExchangeTimestamp() {
-    RestApiRequest<Long> request = new RestApiRequest<>();
+    RestApiRequest<Long> request = createRestApiRequest();
     request.request = createRequestByGet("/v1/common/timestamp", null);
     request.jsonParser = (json ->
         TimeService.convertCSTInMillisecondToUTC(json.getLong("data")));
@@ -150,7 +151,7 @@ class RestApiRequestImpl {
         .checkSymbol(symbol)
         .checkRange(size, 1, 2000, "size")
         .shouldNotNull(interval, "CandlestickInterval");
-    RestApiRequest<List<Candlestick>> request = new RestApiRequest<>();
+    RestApiRequest<List<Candlestick>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("symbol", symbol)
         .putToUrl("period", interval)
@@ -180,7 +181,7 @@ class RestApiRequestImpl {
   }
 
   RestApiRequest<List<Account>> getAccounts() {
-    RestApiRequest<List<Account>> request = new RestApiRequest<>();
+    RestApiRequest<List<Account>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build();
     request.request = createRequestByGetWithSignature("/v1/account/accounts", builder);
     request.jsonParser = (jsonWrapper -> {
@@ -201,7 +202,7 @@ class RestApiRequestImpl {
   RestApiRequest<PriceDepth> getPriceDepth(String symbol, Integer size) {
     InputChecker.checker().checkSymbol(symbol)
         .checkRange(size, 1, 150, "size");
-    RestApiRequest<PriceDepth> request = new RestApiRequest<>();
+    RestApiRequest<PriceDepth> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("symbol", symbol)
         .putToUrl("type", "step0");
@@ -238,7 +239,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<List<Trade>> getHistoricalTrade(String symbol, String fromId, Integer size) {
     InputChecker.checker().checkSymbol(symbol).checkRange(size, 1, 2000, "size");
-    RestApiRequest<List<Trade>> request = new RestApiRequest<>();
+    RestApiRequest<List<Trade>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("symbol", symbol)
         .putToUrl("size", size);  //.put("fromid", fromId)
@@ -265,7 +266,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<TradeStatistics> get24HTradeStatistics(String symbol) {
     InputChecker.checker().checkSymbol(symbol);
-    RestApiRequest<TradeStatistics> request = new RestApiRequest<>();
+    RestApiRequest<TradeStatistics> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("symbol", symbol);
     request.request = createRequestByGet("/market/detail", builder);
@@ -289,7 +290,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<List<Symbol>> getSymbols() {
 
-    RestApiRequest<List<Symbol>> request = new RestApiRequest<>();
+    RestApiRequest<List<Symbol>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build();
     request.request = createRequestByGet("/v1/common/symbols", builder);
     request.jsonParser = (jsonWrapper -> {
@@ -313,7 +314,7 @@ class RestApiRequestImpl {
   }
 
   RestApiRequest<List<String>> getCurrencies() {
-    RestApiRequest<List<String>> request = new RestApiRequest<>();
+    RestApiRequest<List<String>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build();
     request.request = createRequestByGet("/v1/common/currencys", builder);
     request.jsonParser = (jsonWrapper -> {
@@ -328,7 +329,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<BestQuote> getBestQuote(String symbol) {
     InputChecker.checker().checkSymbol(symbol);
-    RestApiRequest<BestQuote> request = new RestApiRequest<>();
+    RestApiRequest<BestQuote> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("symbol", symbol);
     request.request = createRequestByGet("/market/detail/merged", builder);
@@ -351,7 +352,7 @@ class RestApiRequestImpl {
       Integer size) {
     InputChecker.checker().checkCurrency(currency).shouldNotNull(fromId, "fromTd")
         .shouldNotNull(size, "size");
-    RestApiRequest<List<Withdraw>> request = new RestApiRequest<>();
+    RestApiRequest<List<Withdraw>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("currency", currency)
         .putToUrl("type", "withdraw")
@@ -386,7 +387,7 @@ class RestApiRequestImpl {
       Integer size) {
     InputChecker.checker().checkCurrency(currency).shouldNotNull(fromId, "fromTd")
         .shouldNotNull(size, "size");
-    RestApiRequest<List<Deposit>> request = new RestApiRequest<>();
+    RestApiRequest<List<Deposit>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("currency", currency)
         .putToUrl("type", "deposit")
@@ -418,7 +419,7 @@ class RestApiRequestImpl {
   }
 
   RestApiRequest<List<Balance>> getBalance(Account account) {
-    RestApiRequest<List<Balance>> request = new RestApiRequest<>();
+    RestApiRequest<List<Balance>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build();
     String url = String.format("/v1/account/accounts/%d/balance", account.getId());
     request.request = createRequestByGetWithSignature(url, builder);
@@ -453,7 +454,7 @@ class RestApiRequestImpl {
     } else {
       throw new HuobiApiException(HuobiApiException.INPUT_ERROR, "[Input] incorrect transfer type");
     }
-    RestApiRequest<Long> request = new RestApiRequest<>();
+    RestApiRequest<Long> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToPost("currency", transferRequest.currency)
         .putToPost("symbol", transferRequest.symbol)
@@ -473,7 +474,7 @@ class RestApiRequestImpl {
   RestApiRequest<Long> applyLoan(String symbol, String currency, BigDecimal amount) {
     InputChecker.checker().checkSymbol(symbol).checkCurrency(currency)
         .shouldNotNull(amount, "amount");
-    RestApiRequest<Long> request = new RestApiRequest<>();
+    RestApiRequest<Long> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToPost("currency", currency)
         .putToPost("symbol", symbol)
@@ -490,7 +491,7 @@ class RestApiRequestImpl {
   RestApiRequest<Long> repayLoan(long loadId, BigDecimal amount) {
 
     InputChecker.checker().shouldNotNull(amount, "amount");
-    RestApiRequest<Long> request = new RestApiRequest<>();
+    RestApiRequest<Long> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToPost("amount", amount);
     String url = String.format("/v1/margin/orders/%d/repay", loadId);
@@ -503,7 +504,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<List<Loan>> getLoan(LoanOrderRequest loanOrderRequest) {
     InputChecker.checker().checkSymbol(loanOrderRequest.getSymbol());
-    RestApiRequest<List<Loan>> request = new RestApiRequest<>();
+    RestApiRequest<List<Loan>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("symbol", loanOrderRequest.getSymbol())
         .putToUrl("start-date", loanOrderRequest.getStartDate(), "yyyy-MM-dd")
@@ -565,7 +566,7 @@ class RestApiRequestImpl {
     if (account == null) {
       throw new HuobiApiException(HuobiApiException.INPUT_ERROR, "[Input] No such account");
     }
-    RestApiRequest<Long> request = new RestApiRequest<>();
+    RestApiRequest<Long> request = createRestApiRequest();
     String source = "api";
     if (newOrderRequest.getAccountType() == AccountType.MARGIN) {
       source = "margin-api";
@@ -594,7 +595,7 @@ class RestApiRequestImpl {
     if (account == null) {
       throw new HuobiApiException(HuobiApiException.INPUT_ERROR, "[Input] No such account");
     }
-    RestApiRequest<List<Order>> request = new RestApiRequest<>();
+    RestApiRequest<List<Order>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("account-id", account.getId())
         .putToUrl("symbol", openOrderRequest.getSymbol())
@@ -629,7 +630,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<Void> cancelOrder(String symbol, long orderId) {
     InputChecker.checker().checkSymbol(symbol);
-    RestApiRequest<Void> request = new RestApiRequest<>();
+    RestApiRequest<Void> request = createRestApiRequest();
     String url = String.format("/v1/order/orders/%d/submitcancel", orderId);
     request.request = createRequestByPostWithSignature(url, UrlParamsBuilder.build());
     request.jsonParser = (json -> (null));
@@ -641,7 +642,7 @@ class RestApiRequestImpl {
         .checkSymbol(symbol)
         .shouldNotNull(orderIds, "orderIds")
         .checkList(orderIds, 1, 50, "orderIds");
-    RestApiRequest<Void> request = new RestApiRequest<>();
+    RestApiRequest<Void> request = createRestApiRequest();
     List<String> stringList = new LinkedList<>();
     for (Object obj : orderIds) {
       stringList.add(obj.toString());
@@ -663,7 +664,7 @@ class RestApiRequestImpl {
     if (account == null) {
       throw new HuobiApiException(HuobiApiException.INPUT_ERROR, "[Input] No such account");
     }
-    RestApiRequest<BatchCancelResult> request = new RestApiRequest<>();
+    RestApiRequest<BatchCancelResult> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToPost("account-id", account.getId())
         .putToPost("symbol", cancelOpenOrderRequest.getSymbol())
@@ -683,7 +684,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<Order> getOrder(String symbol, long orderId) {
     InputChecker.checker().checkSymbol(symbol);
-    RestApiRequest<Order> request = new RestApiRequest<>();
+    RestApiRequest<Order> request = createRestApiRequest();
     String url = String.format("/v1/order/orders/%d", orderId);
     UrlParamsBuilder builder = UrlParamsBuilder.build();
     request.request = createRequestByGetWithSignature(url, builder);
@@ -715,7 +716,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<List<MatchResult>> getMatchResults(String symbol, long orderId) {
     InputChecker.checker().checkSymbol(symbol);
-    RestApiRequest<List<MatchResult>> request = new RestApiRequest<>();
+    RestApiRequest<List<MatchResult>> request = createRestApiRequest();
     String url = String.format("/v1/order/orders/%d/matchresults", orderId);
     UrlParamsBuilder builder = UrlParamsBuilder.build();
     request.request = createRequestByGetWithSignature(url, builder);
@@ -745,7 +746,7 @@ class RestApiRequestImpl {
   RestApiRequest<List<MatchResult>> getMatchResults(MatchResultRequest matchResultRequest) {
     InputChecker.checker().checkSymbol(matchResultRequest.getSymbol())
         .checkRange(matchResultRequest.getSize(), 1, 100, "size");
-    RestApiRequest<List<MatchResult>> request = new RestApiRequest<>();
+    RestApiRequest<List<MatchResult>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("symbol", matchResultRequest.getSymbol())
         .putToUrl("types", matchResultRequest.getType())
@@ -783,7 +784,7 @@ class RestApiRequestImpl {
         .checkCurrency(withdrawRequest.getCurrency())
         .shouldNotNull(withdrawRequest.getAddress(), "address")
         .shouldNotNull(withdrawRequest.getAmount(), "amount");
-    RestApiRequest<Long> request = new RestApiRequest<>();
+    RestApiRequest<Long> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToPost("address", withdrawRequest.getAddress())
         .putToPost("amount", withdrawRequest.getAmount())
@@ -797,7 +798,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<Void> cancelWithdraw(String currency, long withdrawId) {
     InputChecker.checker().checkSymbol(currency);
-    RestApiRequest<Void> request = new RestApiRequest<>();
+    RestApiRequest<Void> request = createRestApiRequest();
     String url = String.format("/v1/dw/withdraw-virtual/%d/cancel", withdrawId);
     UrlParamsBuilder builder = UrlParamsBuilder.build().setPostMode(true);
     request.request = createRequestByPostWithSignature(url, builder);
@@ -808,7 +809,7 @@ class RestApiRequestImpl {
   RestApiRequest<List<Order>> getHistoricalOrders(HistoricalOrdersRequest req) {
     InputChecker.checker().checkSymbol(req.getSymbol())
         .shouldNotNull(req.getState(), "state");
-    RestApiRequest<List<Order>> request = new RestApiRequest<>();
+    RestApiRequest<List<Order>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("symbol", req.getSymbol())
         .putToUrl("types", req.getType())
@@ -854,7 +855,7 @@ class RestApiRequestImpl {
         .shouldNotNull(req.getAmount(), "amount")
         .shouldNotNull(req.getSubUid(), "sub-uid")
         .shouldNotNull(req.getType(), "type");
-    RestApiRequest<Long> request = new RestApiRequest<>();
+    RestApiRequest<Long> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToPost("sub-uid", req.getSubUid())
         .putToPost("amount", req.getAmount())
@@ -866,7 +867,7 @@ class RestApiRequestImpl {
   }
 
   RestApiRequest<List<Balance>> getCurrentUserAggregatedBalance() {
-    RestApiRequest<List<Balance>> request = new RestApiRequest<>();
+    RestApiRequest<List<Balance>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build();
     request.request = createRequestByGetWithSignature("/v1/subuser/aggregate-balance", builder);
     request.jsonParser = (jsonWrapper -> {
@@ -884,7 +885,7 @@ class RestApiRequestImpl {
   }
 
   RestApiRequest<List<CompleteSubAccountInfo>> getSpecifyAccountBalance(long subId) {
-    RestApiRequest<List<CompleteSubAccountInfo>> request = new RestApiRequest<>();
+    RestApiRequest<List<CompleteSubAccountInfo>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build();
     String url = String.format("/v1/account/accounts/%d", subId);
     request.request = createRequestByGetWithSignature(url, builder);
@@ -919,7 +920,7 @@ class RestApiRequestImpl {
         .checkRange(size, 1, 2000, "size")
         .shouldNotNull(interval, "interval");
 
-    RestApiRequest<List<Candlestick>> request = new RestApiRequest<>();
+    RestApiRequest<List<Candlestick>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("symbol", symbol)
         .putToUrl("period", interval)
@@ -948,7 +949,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<EtfSwapConfig> getEtfSwapConfig(String etfSymbol) {
     InputChecker.checker().checkSymbol(etfSymbol);
-    RestApiRequest<EtfSwapConfig> request = new RestApiRequest<>();
+    RestApiRequest<EtfSwapConfig> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("etf_name", etfSymbol);
     request.request = createRequestByGet("/etf/swap/config", builder);
@@ -979,7 +980,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<Void> etfSwap(String etfSymbol, int amount, EtfSwapType swapType) {
     InputChecker.checker().checkSymbol(etfSymbol).shouldNotNull(swapType, "swapType");
-    RestApiRequest<Void> request = new RestApiRequest<>();
+    RestApiRequest<Void> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToPost("etf_name", etfSymbol)
         .putToPost("amount", amount);
@@ -997,7 +998,7 @@ class RestApiRequestImpl {
         .checkSymbol(etfSymbol)
         .checkRange(size, 1, 100, "size")
         .greaterOrEqual(offset, 0, "offset");
-    RestApiRequest<List<EtfSwapHistory>> request = new RestApiRequest<>();
+    RestApiRequest<List<EtfSwapHistory>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("etf_name", etfSymbol)
         .putToUrl("offset", offset)
@@ -1044,7 +1045,7 @@ class RestApiRequestImpl {
 
   RestApiRequest<List<MarginBalanceDetail>> getMarginBalanceDetail(String symbol) {
     InputChecker.checker().checkSymbol(symbol);
-    RestApiRequest<List<MarginBalanceDetail>> request = new RestApiRequest<>();
+    RestApiRequest<List<MarginBalanceDetail>> request = createRestApiRequest();
     UrlParamsBuilder builder = UrlParamsBuilder.build()
         .putToUrl("symbol", symbol);
     request.request = createRequestByGetWithSignature("/v1/margin/accounts/balance", builder);
@@ -1078,7 +1079,7 @@ class RestApiRequestImpl {
   }
 
   RestApiRequest<Map<String, TradeStatistics>> getTickers() {
-    RestApiRequest<Map<String, TradeStatistics>> request = new RestApiRequest<>();
+    RestApiRequest<Map<String, TradeStatistics>> request = createRestApiRequest();
     request.request = createRequestByGet("/market/tickers", UrlParamsBuilder.build());
     request.jsonParser = (jsonWrapper -> {
       Map<String, TradeStatistics> map = new HashMap<>();
@@ -1098,6 +1099,12 @@ class RestApiRequestImpl {
       });
       return map;
     });
+    return request;
+  }
+
+  private <T> RestApiRequest<T> createRestApiRequest() {
+    RestApiRequest<T> request = new RestApiRequest<>();
+    request.proxy = options.getProxy();
     return request;
   }
 }

@@ -1,6 +1,8 @@
 package com.huobi.client;
 
 import com.huobi.client.exception.HuobiApiException;
+
+import java.net.Proxy;
 import java.net.URI;
 
 /**
@@ -12,6 +14,7 @@ public class SubscriptionOptions {
   private boolean isAutoReconnect = true;
   private int receiveLimitMs = 60_000;
   private int connectionDelayOnFailure = 15;
+  private Proxy proxy;
 
 
   public SubscriptionOptions(
@@ -20,6 +23,7 @@ public class SubscriptionOptions {
     this.isAutoReconnect = options.isAutoReconnect;
     this.receiveLimitMs = options.receiveLimitMs;
     this.connectionDelayOnFailure = options.connectionDelayOnFailure;
+    this.setProxy(getProxy());
   }
 
   public SubscriptionOptions() {
@@ -93,5 +97,13 @@ public class SubscriptionOptions {
 
   public String getUri() {
     return uri;
+  }
+
+  public Proxy getProxy() {
+    return proxy;
+  }
+
+  public void setProxy(Proxy proxy) {
+    this.proxy = proxy;
   }
 }

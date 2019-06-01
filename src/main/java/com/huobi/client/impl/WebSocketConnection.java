@@ -9,6 +9,7 @@ import com.huobi.client.impl.utils.JsonWrapper;
 import com.huobi.client.impl.utils.TimeService;
 import com.huobi.client.impl.utils.UrlParamsBuilder;
 import java.io.IOException;
+import java.net.Proxy;
 import java.net.URI;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -56,6 +57,7 @@ public class WebSocketConnection extends WebSocketListener {
   private final Request okhttpRequest;
   private final String apiKey;
   private final String secretKey;
+  private final Proxy proxy;
   private final WebSocketWatchDog watchDog;
   private final int connectionId;
 
@@ -72,6 +74,7 @@ public class WebSocketConnection extends WebSocketListener {
     this.connectionId = WebSocketConnection.connectionCounter++;
     this.apiKey = apiKey;
     this.secretKey = secretKey;
+    this.proxy = options.getProxy();
     this.request = request;
     try {
       String host = new URI(options.getUri()).getHost();
@@ -106,7 +109,7 @@ public class WebSocketConnection extends WebSocketListener {
       return;
     }
     log.info("[Sub][" + this.connectionId + "] Connecting...");
-    webSocket = RestApiInvoker.createWebSocket(okhttpRequest, this);
+    webSocket = RestApiInvoker.createWebSocket(okhttpRequest, this, proxy);
   }
 
   void reConnect(int delayInSecond) {

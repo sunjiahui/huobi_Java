@@ -1,6 +1,8 @@
 package com.huobi.client;
 
 import com.huobi.client.exception.HuobiApiException;
+
+import java.net.Proxy;
 import java.net.URL;
 
 /**
@@ -9,12 +11,14 @@ import java.net.URL;
 public class RequestOptions {
 
   private String url = "https://api.huobi.pro";
+  private Proxy proxy;
 
   public RequestOptions() {
   }
 
   public RequestOptions(RequestOptions option) {
     this.url = option.url;
+    this.setProxy(option.getProxy());
   }
 
   /**
@@ -35,5 +39,13 @@ public class RequestOptions {
 
   public String getUrl() {
     return url;
+  }
+
+  public Proxy getProxy() {
+    return proxy;
+  }
+
+  public void setProxy(Proxy proxy) {
+    this.proxy = proxy;
   }
 }
